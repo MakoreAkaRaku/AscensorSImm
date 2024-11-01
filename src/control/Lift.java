@@ -3,15 +3,21 @@ package control;
 import data.Global;
 import data.Perceptions;
 import view.View;
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
+import javax.sound.sampled.LineUnavailableException;
+import java.io.IOException;
 
 
 public class Lift implements Runnable {
-    private Perceptions perc = new Perceptions();
+    private Perceptions perc;
+    private Clip bgAudio,openDoorAudio;
     private View view;
 
     private boolean goingUp;
 
-    public Lift(Perceptions perc){
+    public Lift(Perceptions perc,Global data){
         this.perc = perc;
         goingUp = true;
     }
@@ -246,19 +252,8 @@ public class Lift implements Runnable {
     @Override
     public void run() {
         while(true){
-            if(!perc.isStopped){
+            if(!perc.isStopped)
                 act();
-                if(data.Global.DEBUG){
-                    System.out.println(this);
-                }
-            } else { // Si no ponemos este else con alguna instruccion que el 
-                     //compilador no elimine en la optimizacion, el bucle nunca 
-                     // vuelve a empezar. No tengo ni idea de por qué cojones
-                     // hace esto el gilipollas.
-                if(!data.Global.DEBUG){
-                    System.out.print("");
-                }
-            }
         }
     }
     
