@@ -1,5 +1,6 @@
 package view;
 
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.logging.Level;
@@ -12,6 +13,8 @@ import data.Perceptions;
 import control.Lift;
 
 import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 /**
  * Class that contains the Swing GUI for the project.
@@ -26,7 +29,7 @@ public class View extends JFrame {
     private final Perceptions perc;
     private final Lift lift;
 
-    private JSlider volumeSlider, speedSlider;
+    private JSlider volumeSlider;
     private JButton jButton1    //
             , jButton2          //
             , jButton3          //
@@ -38,11 +41,12 @@ public class View extends JFrame {
             , jButton9          //
             , jButton10         //
             , jButton12;
-    private JCheckBox muteBtn;          //
+    private JCheckBox muteCheckbox;          //
     private JLabel elevator;
-    private JPanel jPanel1;
-    private JPanel jPanel2;
-    private JPanel jPanel3;
+    private JPanel jPanel1,
+            jPanel2,
+            jPanel3,
+            optionPanel; // For options like volume, speed  or mute/unmute
     private JTextField jTextField1;
     private final Global data;
     private final AudioManager audioManager;
@@ -54,6 +58,10 @@ public class View extends JFrame {
         this.audioManager = aManager;
         initComponents();
         addComponents();
+        pack();
+        setResizable(false);
+        setLocationRelativeTo(null);
+        setVisible(true);
     }
 
     /**
@@ -77,11 +85,11 @@ public class View extends JFrame {
         jButton10 = new JButton();
         jButton12 = new JButton();
         jTextField1 = new JTextField();
-        muteBtn = new JCheckBox();
-        volumeSlider = new JSlider(-80, 80);
-        speedSlider = new JSlider(1, 5);
-        setResizable(false);
-        setLocationRelativeTo(null);
+        muteCheckbox = new JCheckBox();
+        volumeSlider = new JSlider(0, Math.round(AudioManager.MAX_SLIDER_VALUE));
+        final int volume = audioManager.getAudioVolume();
+        volumeSlider.setValue(volume);
+        optionPanel = new JPanel();
     }
 
     /**
@@ -90,6 +98,12 @@ public class View extends JFrame {
     private void addComponents() {
         ImageIcon elevatorIcon = data.getElevatorImgIcon(perc.portaTancada ? 1 : 0);
         elevator.setIcon(elevatorIcon);
+
+        optionPanel.setLayout(new BorderLayout());
+        optionPanel.add(volumeSlider, BorderLayout.CENTER);
+        JLabel volumenLabel = new JLabel("Configuració del So");
+        optionPanel.add(muteCheckbox,BorderLayout.EAST);
+        optionPanel.add(volumenLabel,BorderLayout.WEST);
         GroupLayout jPanel1Layout = new GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
@@ -193,7 +207,6 @@ public class View extends JFrame {
         jButton8.setText("0");
         jButton8.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
-                audioManager.toggleAudio();
                 jButton8ActionPerformed(evt);
             }
         });
@@ -227,13 +240,16 @@ public class View extends JFrame {
                                         .addComponent(jButton2, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                         .addComponent(jButton10, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                         .addComponent(jButton9, GroupLayout.Alignment.TRAILING, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                        .addComponent(jTextField1, GroupLayout.PREFERRED_SIZE, 1, Short.MAX_VALUE))
+                                        .addComponent(jTextField1, GroupLayout.PREFERRED_SIZE, 1, Short.MAX_VALUE)
+                                        .addComponent(optionPanel,GroupLayout.Alignment.LEADING,GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE,GroupLayout.PREFERRED_SIZE)
+                                )
                                 .addContainerGap(68, Short.MAX_VALUE))
         );
         jPanel3Layout.setVerticalGroup(
                 jPanel3Layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                         .addGroup(jPanel3Layout.createSequentialGroup()
                                 .addContainerGap(111, Short.MAX_VALUE)
+                                .addComponent(optionPanel,GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE,GroupLayout.PREFERRED_SIZE)
                                 .addComponent(jTextField1, GroupLayout.PREFERRED_SIZE, 66, GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED, 89, Short.MAX_VALUE)
                                 .addComponent(jButton9, GroupLayout.PREFERRED_SIZE, 33, GroupLayout.PREFERRED_SIZE)
@@ -269,8 +285,18 @@ public class View extends JFrame {
                                 .addComponent(jPanel3, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                                 .addGap(0, 0, Short.MAX_VALUE))
         );
-
-        pack();
+        muteCheckbox.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                audioManager.toggleAudio();
+            }
+        });
+        volumeSlider.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                audioManager.setAudioVolume(volumeSlider.getValue());
+            }
+        });
     }
 
     private void jButton1ActionPerformed(ActionEvent evt) {

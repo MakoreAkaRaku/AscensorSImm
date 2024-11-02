@@ -8,7 +8,7 @@ import java.io.IOException;
 public class AudioManager {
 
     private static final int FRAME_POSITION_BG_MUSIC_START = 3;
-
+    public static final float MAX_SLIDER_VALUE = 50f;
     private static final int FRAME_POSITION_OPEN_DOOR_START = 70000;
     private static Clip bgAudio, openDoorAudio;
     private static BooleanControl bgAudioMuted, openDoorMuted;
@@ -35,9 +35,10 @@ public class AudioManager {
         openDoorVolume = (FloatControl) openDoorAudio.getControl(FloatControl.Type.MASTER_GAIN);
     }
 
-    public void setAudioVolume(float currentValue) {
-        bgAudioVolume.setValue(currentValue);
-        openDoorVolume.setValue(currentValue);
+    public void setAudioVolume(int sliderValue) {
+        final float newVolume = (bgAudioVolume.getMaximum()-bgAudioVolume.getMinimum() )*(sliderValue/ MAX_SLIDER_VALUE) + bgAudioVolume.getMinimum();
+        bgAudioVolume.setValue(newVolume);
+        openDoorVolume.setValue(newVolume);
     }
 
     public void toggleAudio() {
@@ -58,5 +59,10 @@ public class AudioManager {
             openDoorAudio.stop();
         openDoorAudio.setFramePosition(FRAME_POSITION_OPEN_DOOR_START);
         openDoorAudio.start();
+    }
+
+    public int getAudioVolume() {
+        final int volume =  Math.round((bgAudioVolume.getValue() - bgAudioVolume.getMinimum() )/((bgAudioVolume.getMaximum()-bgAudioVolume.getMinimum() ))*MAX_SLIDER_VALUE);
+        return volume;
     }
 }
