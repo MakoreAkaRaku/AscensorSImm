@@ -15,7 +15,7 @@ public class Global {
     public final String IMG_RES_NAME[] = {"open.png", "closed.png"};
     private static ImageIcon[] elevatorImages;
     private static AudioInputStream bgMusic, openDoorSnd;
-    public static final int NUM_FLOORS = 4;
+    public static final int NUM_PISOS = 4;
     public static final int DELTA_TIME = 1_000;
     public static final boolean DEBUG = false;
 

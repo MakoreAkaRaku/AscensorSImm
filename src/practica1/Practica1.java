@@ -26,7 +26,7 @@ public class Practica1 {
 
 
         view = new View(perc, lift, data, new AudioManager(data));
-        lift.linkView(view);
+        lift.enllacaVista(view);
         view.setVisible(true);
         view.setResizable(true);
         

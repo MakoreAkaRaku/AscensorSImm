@@ -1,22 +1,22 @@
 package data;
 
 public class Perceptions {
-    public int currentFloor; // The current floor in which the lift is located
-    public boolean[] wantsToGoToFloor = new boolean[Global.NUM_FLOORS]; // Whether someone inside the lift wants to go to the indexed floor.
-    public boolean[] wantToGoUpIn = new boolean[Global.NUM_FLOORS]; // Whether in the indexed floor there is a person who wants to go up
-    public boolean[] wantToGoDownIn = new boolean[Global.NUM_FLOORS]; // Whether in the indexed floor there is a person who wants to go down
-    public boolean isClosed; // Whether the lift door is closed.
+    public int pisActual; // The current floor in which the lift is located
+    public boolean[] volAnarAlPis = new boolean[Global.NUM_PISOS]; // Whether someone inside the lift wants to go to the indexed floor.
+    public boolean[] volPujarA = new boolean[Global.NUM_PISOS]; // Whether in the indexed floor there is a person who wants to go up
+    public boolean[] volBaixarA = new boolean[Global.NUM_PISOS]; // Whether in the indexed floor there is a person who wants to go down
+    public boolean portaTancada; // Whether the lift door is closed.
 
-    public boolean isStopped;
+    public boolean estaAturat;
     
     public Perceptions(){
-        currentFloor = 0;
-        for (int i = 0; i < Global.NUM_FLOORS; i++) {
-            wantsToGoToFloor[i] = false;
-            wantToGoUpIn[i] = false;
-            wantToGoDownIn[i] = false;
+        pisActual = 0;
+        for (int i = 0; i < Global.NUM_PISOS; i++) {
+            volAnarAlPis[i] = false;
+            volPujarA[i] = false;
+            volBaixarA[i] = false;
         }
-        isClosed = true;
-        isStopped = false;
+        portaTancada = true;
+        estaAturat = false;
     }
 }

@@ -3,135 +3,129 @@ package control;
 import data.Global;
 import data.Perceptions;
 import view.View;
-import javax.sound.sampled.AudioInputStream;
-import javax.sound.sampled.AudioSystem;
-import javax.sound.sampled.Clip;
-import javax.sound.sampled.LineUnavailableException;
-import java.io.IOException;
 
 
 public class Lift implements Runnable {
     private Perceptions perc;
-    private Clip bgAudio,openDoorAudio;
     private View view;
 
-    private boolean goingUp;
+    private boolean estaPujant;
 
     public Lift(Perceptions perc,Global data){
         this.perc = perc;
-        goingUp = true;
+        estaPujant = true;
     }
 
     public void act(){
         // 1 - Door is closed, someone wants to go to that floor
-        if(perc.isClosed && perc.wantsToGoToFloor[perc.currentFloor]) {
-            openDoor();
+        if(perc.portaTancada && perc.volAnarAlPis[perc.pisActual]) {
+            obrePorta();
             return;
         }
         // 2 - Door is closed, someone wants to go up in the current floor
-        if(perc.isClosed && goingUp && perc.wantToGoUpIn[perc.currentFloor]){
-            openDoor();
+        if(perc.portaTancada && estaPujant && perc.volPujarA[perc.pisActual]){
+            obrePorta();
             return;
         }
         // 3 - Door is closed, someone wants to go down in the current floor
-        if(perc.isClosed && !goingUp && perc.wantToGoDownIn[perc.currentFloor]){
-            openDoor();
+        if(perc.portaTancada && !estaPujant && perc.volBaixarA[perc.pisActual]){
+            obrePorta();
             return;
         }
 
         // 4, 5 - Door is open
-        if(!perc.isClosed){
-            waitAndClose();
+        if(!perc.portaTancada){
+            esperaITanca();
             return;
         }
         // From here we don't check if the door is closed because if it's open it will not get to this part of the code
 
         // Go up a floor
-        if(goingUp){
+        if(estaPujant){
             // 6 - Someone inside the elevator wants to go up
-            if(!perc.wantsToGoToFloor[perc.currentFloor] && inWantsToGoUp()){
-                goUp();
+            if(!perc.volAnarAlPis[perc.pisActual] && desdeDinsVolAnarAdalt()){
+                puja();
                 return;
             }
             // No one wants to enter the elevator
-            if(!perc.wantToGoDownIn[perc.currentFloor] && !perc.wantToGoUpIn[perc.currentFloor]){
-                if(upWantsToGoUp()){
+            if(!perc.volBaixarA[perc.pisActual] && !perc.volPujarA[perc.pisActual]){
+                if(desdeDaltVolAnarAdalt()){
                     // 7
-                    goUp();
+                    puja();
                     return;
-                } else if(downWantsToGoUp()){
+                } else if(desdeBaixVolAnarAdalt()){
                     // 8
-                    goDown();
+                    baixa();
                     return;
                 }
             }
             // Someone wants to enter the elevator to go down
-            if(perc.wantToGoDownIn[perc.currentFloor]){
+            if(perc.volBaixarA[perc.pisActual]){
                 // 9
-                openDoor();
+                obrePorta();
                 return;
             }
         }
 
         // Go down a floor
-        if(!goingUp){
-            if(!perc.wantsToGoToFloor[perc.currentFloor] && inWantsToGoDown()){
+        if(!estaPujant){
+            if(!perc.volAnarAlPis[perc.pisActual] && desdeDinsVolAnarAbaix()){
                 // 10
-                goDown();
+                baixa();
                 return;
             }
-            if(!perc.wantToGoDownIn[perc.currentFloor] && !perc.wantToGoUpIn[perc.currentFloor]){
-                if(downWantsToGoDown()) {
+            if(!perc.volBaixarA[perc.pisActual] && !perc.volPujarA[perc.pisActual]){
+                if(desdeBaixVolAnarAbaix()) {
                     // 11
-                    goDown();
+                    baixa();
                     return;
-                } else if(upWantsToGoDown()){
+                } else if(desdeDaltVolAnarAbaix()){
                     // 12
-                    goUp();
+                    puja();
                     return;
                 }
             }
-            if(perc.wantToGoUpIn[perc.currentFloor]){
+            if(perc.volPujarA[perc.pisActual]){
                 // 13
-                openDoor();
+                obrePorta();
                 return;
             }
         }
         
         // Go down a floor (but we were going up)
-        if(goingUp){
-            if(!perc.wantsToGoToFloor[perc.currentFloor] && inWantsToGoDown()){
+        if(estaPujant){
+            if(!perc.volAnarAlPis[perc.pisActual] && desdeDinsVolAnarAbaix()){
                 // 14
-                goDown();
+                baixa();
                 return;
             }
-            if(!perc.wantToGoDownIn[perc.currentFloor] && !perc.wantToGoUpIn[perc.currentFloor]){
-                if(downWantsToGoDown()) {
+            if(!perc.volBaixarA[perc.pisActual] && !perc.volPujarA[perc.pisActual]){
+                if(desdeBaixVolAnarAbaix()) {
                     // 15
-                    goDown();
+                    baixa();
                     return;
-                } else if(upWantsToGoDown()){
+                } else if(desdeDaltVolAnarAbaix()){
                     // 16
-                    goUp();
+                    puja();
                     return;
                 }
             }
         }
 
         // Go up a floor (but we were going down)
-        if(!goingUp){
-            if(!perc.wantsToGoToFloor[perc.currentFloor] && inWantsToGoUp()){
+        if(!estaPujant){
+            if(!perc.volAnarAlPis[perc.pisActual] && desdeDinsVolAnarAdalt()){
                 // 17
-                goUp();
+                puja();
                 return;
             }
-            if(!perc.wantToGoDownIn[perc.currentFloor] && !perc.wantToGoUpIn[perc.currentFloor]){
-                if(upWantsToGoUp()){
+            if(!perc.volBaixarA[perc.pisActual] && !perc.volPujarA[perc.pisActual]){
+                if(desdeDaltVolAnarAdalt()){
                     // 18
-                    goUp();
-                } else if(downWantsToGoUp()){
+                    puja();
+                } else if(desdeBaixVolAnarAdalt()){
                     // 19
-                    goDown();
+                    baixa();
                 }
             }
         }
@@ -141,9 +135,9 @@ public class Lift implements Runnable {
      * Checks whether people inside the lift want to go up.
      * @return
      */
-    private boolean inWantsToGoUp(){
-        for (int i = perc.currentFloor+1; i < Global.NUM_FLOORS; i++) {
-            if(perc.wantsToGoToFloor[i]) return true;
+    private boolean desdeDinsVolAnarAdalt(){
+        for (int i = perc.pisActual +1; i < Global.NUM_PISOS; i++) {
+            if(perc.volAnarAlPis[i]) return true;
         }
         return false;
     }
@@ -152,9 +146,9 @@ public class Lift implements Runnable {
      * Checks whether someone in the lower floors wants to go DOWN
      * @return
      */
-    private boolean inWantsToGoDown(){
-        for (int i = perc.currentFloor-1; i >= 0; i--) {
-            if(perc.wantsToGoToFloor[i]) return true;
+    private boolean desdeDinsVolAnarAbaix(){
+        for (int i = perc.pisActual -1; i >= 0; i--) {
+            if(perc.volAnarAlPis[i]) return true;
         }
         return false;
     }
@@ -163,20 +157,20 @@ public class Lift implements Runnable {
      * Checks whether someone in the upper floors wants to go UP
      * @return
      */
-    private boolean upWantsToGoUp(){
-        for (int i = perc.currentFloor+1; i < Global.NUM_FLOORS; i++) {
-            if(perc.wantToGoUpIn[i]) return true;
+    private boolean desdeDaltVolAnarAdalt(){
+        for (int i = perc.pisActual +1; i < Global.NUM_PISOS; i++) {
+            if(perc.volPujarA[i]) return true;
         }
         return false;
     }
     
     /**
-     * Checks whether someone in the upper floors wants to go UP
+     * Checks whether someone in the upper floors wants to go DOWN
      * @return
      */
-    private boolean upWantsToGoDown(){
-        for (int i = perc.currentFloor+1; i < Global.NUM_FLOORS; i++) {
-            if(perc.wantToGoDownIn[i]) return true;
+    private boolean desdeDaltVolAnarAbaix(){
+        for (int i = perc.pisActual +1; i < Global.NUM_PISOS; i++) {
+            if(perc.volBaixarA[i]) return true;
         }
         return false;
     }
@@ -185,9 +179,9 @@ public class Lift implements Runnable {
      * Checks whether someone in the lower floors wants to go UP
      * @return
      */
-    private boolean downWantsToGoUp(){
-        for (int i = perc.currentFloor-1; i >= 0; i--) {
-            if(perc.wantToGoUpIn[i]) return true;
+    private boolean desdeBaixVolAnarAdalt(){
+        for (int i = perc.pisActual -1; i >= 0; i--) {
+            if(perc.volPujarA[i]) return true;
         }
         return false;
     }
@@ -196,54 +190,54 @@ public class Lift implements Runnable {
      * Checks whether someone in the lower floors wants to go DOWN
      * @return
      */
-    private boolean downWantsToGoDown(){
-        for (int i = perc.currentFloor-1; i >= 0; i--) {
-            if(perc.wantToGoDownIn[i]) return true;
+    private boolean desdeBaixVolAnarAbaix(){
+        for (int i = perc.pisActual -1; i >= 0; i--) {
+            if(perc.volBaixarA[i]) return true;
         }
         return false;
     }
 
-    public void goUp(){
-        if(perc.isClosed && perc.currentFloor < Global.NUM_FLOORS-1){
-            perc.currentFloor++;
-            goingUp = true;
+    public void puja(){
+        if(perc.portaTancada && perc.pisActual < Global.NUM_PISOS -1){
+            perc.pisActual++;
+            estaPujant = true;
             view.goUpFloor();
         }
     }
 
-    public void goDown(){
-        if(perc.isClosed && perc.currentFloor > 0){
-            perc.currentFloor--;
-            goingUp = false;
+    public void baixa(){
+        if(perc.portaTancada && perc.pisActual > 0){
+            perc.pisActual--;
+            estaPujant = false;
             view.goDownFloor();
         }
     }
 
-    public void closeDoor(){
-        perc.isClosed = true;
+    public void tancaPorta(){
+        perc.portaTancada = true;
         view.closeDoor();
     }
 
-    public void openDoor(){
+    public void obrePorta(){
         // Simulation of the external behaviour
-        perc.wantsToGoToFloor[perc.currentFloor] = false;
-        if(goingUp && perc.wantToGoUpIn[perc.currentFloor])
-            perc.wantToGoUpIn[perc.currentFloor] = false;
-        if(!goingUp && perc.wantToGoDownIn[perc.currentFloor])
-            perc.wantToGoDownIn[perc.currentFloor] = false;
-        if(goingUp && perc.wantToGoDownIn[perc.currentFloor] && !inWantsToGoUp())
-            perc.wantToGoDownIn[perc.currentFloor] = false;
-        if(!goingUp && perc.wantToGoUpIn[perc.currentFloor] && !inWantsToGoDown())
-            perc.wantToGoUpIn[perc.currentFloor] = false;
+        perc.volAnarAlPis[perc.pisActual] = false;
+        if(estaPujant && perc.volPujarA[perc.pisActual])
+            perc.volPujarA[perc.pisActual] = false;
+        if(!estaPujant && perc.volBaixarA[perc.pisActual])
+            perc.volBaixarA[perc.pisActual] = false;
+        if(estaPujant && perc.volBaixarA[perc.pisActual] && !desdeDinsVolAnarAdalt())
+            perc.volBaixarA[perc.pisActual] = false;
+        if(!estaPujant && perc.volPujarA[perc.pisActual] && !desdeDinsVolAnarAbaix())
+            perc.volPujarA[perc.pisActual] = false;
         // Lift behaviour
-        perc.isClosed = false;
+        perc.portaTancada = false;
         view.openDoor();
     }
 
-    public void waitAndClose(){
+    public void esperaITanca(){
         try {
             Thread.sleep(Global.DELTA_TIME);
-            closeDoor();
+            tancaPorta();
         } catch(InterruptedException e) {
             e.printStackTrace();
         }
@@ -252,27 +246,27 @@ public class Lift implements Runnable {
     @Override
     public void run() {
         while(true){
-            if(!perc.isStopped)
+            if(!perc.estaAturat)
                 act();
         }
     }
     
-    public void linkView(View view){
+    public void enllacaVista(View view){
         this.view = view;
     }
 
     @Override
     public String toString(){
         String s = "";
-        for (int i = Global.NUM_FLOORS-1; i >= 0; i--) {
+        for (int i = Global.NUM_PISOS -1; i >= 0; i--) {
             s += "_";
-            if(perc.wantToGoDownIn[i] || perc.wantToGoUpIn[i]) s += " * ";
+            if(perc.volBaixarA[i] || perc.volPujarA[i]) s += " * ";
             else s += "   ";
-            if(perc.currentFloor == i){
-                if(perc.isClosed) s += "[]";
+            if(perc.pisActual == i){
+                if(perc.portaTancada) s += "[]";
                 else s += "[ ]";
             }
-            if(perc.wantsToGoToFloor[i]) s += " <-- ";
+            if(perc.volAnarAlPis[i]) s += " <-- ";
             s += "\n";
         }
         return s;
