@@ -48,7 +48,7 @@ public class Lift implements Runnable {
                 return;
             }
             // No one wants to enter the elevator
-            if(!perc.volBaixarA[perc.pisActual] && !perc.volPujarA[perc.pisActual]){
+            if(!perc.volPujarA[perc.pisActual]){
                 if(desdeDaltVolAnarAdalt()){
                     // 7
                     puja();
@@ -74,7 +74,7 @@ public class Lift implements Runnable {
                 baixa();
                 return;
             }
-            if(!perc.volBaixarA[perc.pisActual] && !perc.volPujarA[perc.pisActual]){
+            if(!perc.volBaixarA[perc.pisActual]){
                 if(desdeBaixVolAnarAbaix()) {
                     // 11
                     baixa();
