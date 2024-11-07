@@ -132,70 +132,67 @@ public class Lift implements Runnable {
     }
 
     /**
-     * Checks whether people inside the lift want to go up.
-     * @return
+     * Checks whether people inside the lift want to go in the specified direction.
+     * @param startFloor The current floor where the check should begin.
+     * @param step The step direction (1 for up, -1 for down).
+     * @param requests The array of requests (volAnarAlPis, volPujarA, volBaixarA).
+     * @return true if there is a request in the specified direction.
      */
-    private boolean desdeDinsVolAnarAdalt(){
-        for (int i = perc.pisActual +1; i < Global.NUM_PISOS; i++) {
-            if(perc.volAnarAlPis[i]) return true;
+    private boolean checkRequests(int startFloor, int step, boolean[] requests) {
+        for (int i = startFloor + step; (step == 1) ? i < Global.NUM_PISOS : i >= 0; i += step) {
+            if (requests[i]) return true;
         }
         return false;
     }
 
     /**
-     * Checks whether someone in the lower floors wants to go DOWN
-     * @return
+     * Checks whether people inside the lift want to go up from the current floor.
+     * @return true if someone wants to go up from the current floor.
      */
-    private boolean desdeDinsVolAnarAbaix(){
-        for (int i = perc.pisActual -1; i >= 0; i--) {
-            if(perc.volAnarAlPis[i]) return true;
-        }
-        return false;
+    private boolean desdeDinsVolAnarAdalt() {
+        return checkRequests(perc.pisActual, 1, perc.volAnarAlPis);
     }
 
     /**
-     * Checks whether someone in the upper floors wants to go UP
-     * @return
+     * Checks whether people inside the lift want to go down from the current floor.
+     * @return true if someone wants to go down from the current floor.
      */
-    private boolean desdeDaltVolAnarAdalt(){
-        for (int i = perc.pisActual +1; i < Global.NUM_PISOS; i++) {
-            if(perc.volPujarA[i]) return true;
-        }
-        return false;
-    }
-    
-    /**
-     * Checks whether someone in the upper floors wants to go DOWN
-     * @return
-     */
-    private boolean desdeDaltVolAnarAbaix(){
-        for (int i = perc.pisActual +1; i < Global.NUM_PISOS; i++) {
-            if(perc.volBaixarA[i]) return true;
-        }
-        return false;
-    }
-    
-    /**
-     * Checks whether someone in the lower floors wants to go UP
-     * @return
-     */
-    private boolean desdeBaixVolAnarAdalt(){
-        for (int i = perc.pisActual -1; i >= 0; i--) {
-            if(perc.volPujarA[i]) return true;
-        }
-        return false;
+    private boolean desdeDinsVolAnarAbaix() {
+        return checkRequests(perc.pisActual, -1, perc.volAnarAlPis);
     }
 
     /**
-     * Checks whether someone in the lower floors wants to go DOWN
-     * @return
+     * Checks whether someone on the upper floors wants to go up.
+     * @return true if someone on a higher floor wants to go up.
      */
-    private boolean desdeBaixVolAnarAbaix(){
-        for (int i = perc.pisActual -1; i >= 0; i--) {
-            if(perc.volBaixarA[i]) return true;
-        }
-        return false;
+    private boolean desdeDaltVolAnarAdalt() {
+        return checkRequests(perc.pisActual, 1, perc.volPujarA);
     }
+
+    /**
+     * Checks whether someone on the upper floors wants to go down.
+     * @return true if someone on a higher floor wants to go down.
+     */
+    private boolean desdeDaltVolAnarAbaix() {
+        return checkRequests(perc.pisActual, 1, perc.volBaixarA);
+    }
+
+    /**
+     * Checks whether someone on the lower floors wants to go up.
+     * @return true if someone on a lower floor wants to go up.
+     */
+    private boolean desdeBaixVolAnarAdalt() {
+        return checkRequests(perc.pisActual, -1, perc.volPujarA);
+    }
+
+    /**
+     * Checks whether someone on the lower floors wants to go down.
+     * @return true if someone on a lower floor wants to go down.
+     */
+    private boolean desdeBaixVolAnarAbaix() {
+        return checkRequests(perc.pisActual, -1, perc.volBaixarA);
+    }
+
 
     public void puja(){
         if(perc.portaTancada && perc.pisActual < Global.NUM_PISOS -1){
