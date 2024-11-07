@@ -17,20 +17,32 @@ public class Lift implements Runnable {
     }
 
     public void act(){
-        // 1 - Door is closed, someone wants to go to that floor
-        if(perc.portaTancada && perc.volAnarAlPis[perc.pisActual]) {
-            obrePorta();
-            return;
-        }
-        // 2 - Door is closed, someone wants to go up in the current floor
-        if(perc.portaTancada && estaPujant && perc.volPujarA[perc.pisActual]){
-            obrePorta();
-            return;
-        }
-        // 3 - Door is closed, someone wants to go down in the current floor
-        if(perc.portaTancada && !estaPujant && perc.volBaixarA[perc.pisActual]){
-            obrePorta();
-            return;
+
+        //if door is closed and
+        if (perc.portaTancada){
+            // 1 - Someone wants to go to that floor
+            if (perc.volAnarAlPis[perc.pisActual]) {
+                obrePorta();
+                return;
+            }
+            // 2 - Someone wants to go up in the current floor and is lifting up
+            if(estaPujant && perc.volPujarA[perc.pisActual]){
+                obrePorta();
+                return;
+            }
+            else if (estaPujant && !desdeDaltVolAnarAdalt() && perc.volBaixarA[perc.pisActual]){
+                obrePorta();
+                return;
+            }
+            // 3 Someone wants to go down in the current floor and is lifting down
+            if(!estaPujant && perc.volBaixarA[perc.pisActual]){
+                obrePorta();
+                return;
+            }
+            else if (!estaPujant && !desdeBaixVolAnarAbaix() && perc.volPujarA[perc.pisActual]){
+                obrePorta();
+                return;
+            }
         }
 
         // 4, 5 - Door is open
@@ -49,7 +61,7 @@ public class Lift implements Runnable {
             }
             // No one wants to enter the elevator
             if(!perc.volPujarA[perc.pisActual]){
-                if(desdeDaltVolAnarAdalt()){
+                if(desdeDaltVolAnarAdalt() || desdeDaltVolAnarAbaix()){
                     // 7
                     puja();
                     return;
@@ -75,7 +87,7 @@ public class Lift implements Runnable {
                 return;
             }
             if(!perc.volBaixarA[perc.pisActual]){
-                if(desdeBaixVolAnarAbaix()) {
+                if(desdeBaixVolAnarAbaix() || desdeBaixVolAnarAdalt()) {
                     // 11
                     baixa();
                     return;
