@@ -30,18 +30,21 @@ public class Lift implements Runnable {
                 obrePorta();
                 return;
             }
-            else if (estaPujant && !desdeDaltVolAnarAdalt() && perc.volBaixarA[perc.pisActual]){
-                obrePorta();
-                return;
-            }
             // 3 Someone wants to go down in the current floor and is lifting down
-            if(!estaPujant && perc.volBaixarA[perc.pisActual]){
+            else if(!estaPujant && perc.volBaixarA[perc.pisActual]){
                 obrePorta();
                 return;
             }
-            else if (!estaPujant && !desdeBaixVolAnarAbaix() && perc.volPujarA[perc.pisActual]){
-                obrePorta();
-                return;
+            //In case no one was lifting up or lifting down doing the normal conditions, we checkup with the initial and last position of the lifter.
+            else {
+                if (estaPujant && !desdeDaltVolAnarAdalt() && perc.volBaixarA[perc.pisActual] &&perc.pisActual == Global.NUM_PISOS-1) {
+                    obrePorta();
+                    return;
+                }
+                else if (!estaPujant && !desdeBaixVolAnarAbaix() && perc.volPujarA[perc.pisActual] && perc.pisActual == 0){
+                    obrePorta();
+                    return;
+                }
             }
         }
 
